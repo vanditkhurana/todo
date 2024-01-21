@@ -1,15 +1,14 @@
 package db
 
 import (
-	"log"
 	"os"
 	"strings"
 	"github.com/gocql/gocql"
 )
 
-var session *gocql.Session
+var Session *gocql.Session
 
-func InitScyllaDB() {
+func InitScyllaDB() (*gocql.Session, error) {
 	keyspace := os.Getenv("SCYLLADB_KEYSPACE")
 	publicIPs := os.Getenv("SCYLLADB_PUBLIC_IPS")
 
@@ -20,8 +19,10 @@ func InitScyllaDB() {
 
 	session, err := cluster.CreateSession()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return session
+	Session = session
+	
+	return session, nil
 }
