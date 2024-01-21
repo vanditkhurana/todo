@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/vanditkhurana/todo_api/src/db"
 	"github.com/vanditkhurana/todo_api/src/routes"
-	"github.com/yourusername/todo_api/src/controllers"
+	"github.com/vanditkhurana/todo_api/src/controllers"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module TODO_API
+module github.com/vanditkhurana/todo_api
 
 go 1.21.6
 
