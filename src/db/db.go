@@ -2,27 +2,29 @@ package db
 
 import (
 	"os"
-	"strings"
+	"fmt"
+	"log"
+	"github.com/joho/godotenv"
 	"github.com/gocql/gocql"
 )
 
 var Session *gocql.Session
-
-func InitScyllaDB() (*gocql.Session, error) {
+func init() {
+	var err error
+	if err := godotenv.Load(); err != nil {
+        log.Fatal("Error loading .env file")
+    }
 	keyspace := os.Getenv("SCYLLADB_KEYSPACE")
-	publicIPs := os.Getenv("SCYLLADB_PUBLIC_IPS")
+	publicIP := os.Getenv("SCYLLADB_IP")
 
-	publicIPList := strings.Split(publicIPs, ",")
-
-	cluster := gocql.NewCluster(publicIPList...)
+	cluster := gocql.NewCluster(publicIP)
 	cluster.Keyspace = keyspace
 
-	session, err := cluster.CreateSession()
-	if err != nil {
-		return nil, err
-	}
+	Session, err = cluster.CreateSession()
 
-	Session = session
+	if err != nil {
+		panic(err)
+	}
 	
-	return session, nil
+	fmt.Println("Scylla init done!")
 }

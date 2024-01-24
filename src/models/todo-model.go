@@ -7,7 +7,7 @@ import (
 
 type Todo struct {
     ID          gocql.UUID    `json:"id"`
-    UserID      string        `json:"user_id"`
+    User_ID     string        `json:"user_id"`
     Title       string        `json:"title"`
     Description string        `json:"description"`
     Status      string        `json:"status"`
@@ -17,4 +17,8 @@ type Todo struct {
 
 type TodoList struct {
 	Todos []Todo `json:"todos"`
+}
+
+type WelcomeResponse struct {
+	Message string `json:"message"`
 }

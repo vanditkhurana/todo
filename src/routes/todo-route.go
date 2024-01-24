@@ -1,24 +1,25 @@
 package routes
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 	"github.com/vanditkhurana/todo_api/src/controllers"
 	"github.com/gorilla/mux"
 )
 
+type WelcomeResponse struct {
+	Message string `json:"message"`
+}
+
 func RegisterRoutes(router *mux.Router) {
 
 	// Defining API endpoints
-	router.HandleFunc("/todos", controllers.getAllTodos).Methods("GET")
-	router.HandleFunc("/todos/{id}", controllers.getTodo).Methods("GET")
-	router.HandleFunc("/todos", controllers.createTodo).Methods("POST")
-	router.HandleFunc("/todos/{id}", controllers.updateTodo).Methods("PUT")
-	router.HandleFunc("/todos/{id}", controllers.deleteTodo).Methods("DELETE")
+	router.HandleFunc("/", controllers.WelcomeHandler)
+	router.HandleFunc("/todos?page={page}&limit={limit}&status={status}", controllers.GetAllTodos).Methods("GET")
+	router.HandleFunc("/todos/{user_id}", controllers.GetTodo).Methods("GET")
+	router.HandleFunc("/todos", controllers.CreateTodo).Methods("POST")
+	router.HandleFunc("/todos/{user_id}", controllers.UpdateTodo).Methods("PUT")
+	router.HandleFunc("/todos/{user_id}", controllers.DeleteTodo).Methods("DELETE")
 
-	// Starting the server
-	port := 8080
-	fmt.Printf("Server is running on :%d...\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), router))
+
 }
+
+
