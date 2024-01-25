@@ -19,7 +19,6 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 	page := params.Get("page")
 	limit := params.Get("limit")
 	status := params.Get("status")
-
 	// Default values
 	if page == "" {
 		page = "1"
@@ -41,7 +40,7 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 
 	// Calculate offset
 	offset := (pageInt - 1) * limitInt
-
+	fmt.Printf("%d", offset)
 	// Initial query
 	query := "SELECT id, user_id, title, description, status, created, updated FROM todos_new"
 	
@@ -51,12 +50,12 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sort by created 
-	query += " ORDER BY created"
+	query += " ORDER BY created DESC"
 
 	// Query for pagination
-	query += " LIMIT ? OFFSET ?"
-
-	iter := db.Session.Query(query, status, limitInt, offset).Iter()
+	query += " LIMIT ?"
+	fmt.Printf(query)
+	iter := db.Session.Query(query, status, limitInt).Iter()
 
 	var todos []models.Todo
 	var todo models.Todo
@@ -77,14 +76,14 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 
 func GetTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID := vars["user_id"]
+	userId := vars["user_id"]
 
 	// Retrieve TODO item from the database
 	var todo models.Todo
 	if err := db.Session.Query(`
 		SELECT id, user_id, title, description, status, created, updated
 		FROM todos_new
-		WHERE user_id = ?`, userID).Scan(&todo.ID, &todo.User_ID, &todo.Title, &todo.Description, &todo.Status, &todo.Created, &todo.Updated); err != nil {
+		WHERE user_id = ?`, userId).Scan(&todo.ID, &todo.User_ID, &todo.Title, &todo.Description, &todo.Status, &todo.Created, &todo.Updated); err != nil {
 		http.Error(w, "TODO item not found", http.StatusNotFound)
 		return
 	}
@@ -125,18 +124,11 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars["user_id"]
-
-	// Parse UUID
-	id, err := gocql.ParseUUID(idStr)
-	if err != nil {
-		http.Error(w, "Invalid UUID", http.StatusBadRequest)
-		return
-	}
+	userID := vars["user_id"]
 
 	var todo models.Todo
 	// Parse request body
-	err = json.NewDecoder(r.Body).Decode(&todo)
+	err := json.NewDecoder(r.Body).Decode(&todo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -144,16 +136,16 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 
 	// Update the TODO item
 	// Placeholder logic
-	todo.ID = id
+	todo.User_ID = userID
 	todo.Updated = time.Now()
 
 	// Implement logic to update a TODO item in the database by ID
 	// Placeholder logic
 	if err := db.Session.Query(`
 		UPDATE todos
-		SET user_id = ?, title = ?, description = ?, status = ?, updated = ?
-		WHERE id = ?
-	`, &todo.User_ID, &todo.Title, &todo.Description, &todo.Status, &todo.Updated, &todo.ID).Exec(); err != nil {
+		SET title = ?, description = ?, status = ?, updated = ?
+		WHERE user_id = ?
+	`, &todo.Title, &todo.Description, &todo.Status, &todo.Updated, &todo.User_ID).Exec(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -165,20 +157,13 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	idStr := vars["id"]
-
-	// Parse UUID
-	user_id, err := gocql.ParseUUID(idStr)
-	if err != nil {
-		http.Error(w, "Invalid UUID", http.StatusBadRequest)
-		return
-	}
+	userID := vars["user_id"]
 
 	// Delete TODO item from the database
 	if err := db.Session.Query(`
 		DELETE FROM todos
 		WHERE user_id = ?
-	`, user_id).Exec(); err != nil {
+	`, userID).Exec(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
