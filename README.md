@@ -51,7 +51,7 @@ The REST API to the users app is described below.
 ### 2. To fetch todo data using id
 #### Request
 
-`GET /todos/{id}
+`GET /todos/{id}`
 
 
 ### 3. To create the todo using the todo data from body
