@@ -1,6 +1,6 @@
 # Todos API
 
-Node js API to create, fetch, update and delete todos
+Golang API to create, fetch, update and delete todos from ScyllaDb
 
 ## Installation
 
