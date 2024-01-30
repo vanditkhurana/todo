@@ -42,7 +42,7 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 	offset := (pageInt - 1) * limitInt
 	fmt.Printf("%d", offset)
 	// Initial query
-	query := "SELECT id, user_id, title, description, status, created, updated FROM todos_new"
+	query := "SELECT id, user_id, title, description, status, created, updated FROM todos_new1"
 	
 	// Appending query filter on the basis of status
 	if status != "" {
@@ -54,7 +54,6 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 
 	// Query for pagination
 	query += " LIMIT ?"
-	fmt.Printf(query)
 	iter := db.Session.Query(query, status, limitInt).Iter()
 
 	var todos []models.Todo
@@ -77,13 +76,12 @@ func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 func GetTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["user_id"]
-
 	// Retrieve TODO item from the database
 	var todo models.Todo
 	if err := db.Session.Query(`
 		SELECT id, user_id, title, description, status, created, updated
-		FROM todos_new
-		WHERE user_id = ?`, userId).Scan(&todo.ID, &todo.User_ID, &todo.Title, &todo.Description, &todo.Status, &todo.Created, &todo.Updated); err != nil {
+		FROM todos_new1
+		WHERE user_id = ? ALLOW FILTERING`, userId).Scan(&todo.ID, &todo.User_ID, &todo.Title, &todo.Description, &todo.Status, &todo.Created, &todo.Updated); err != nil {
 		http.Error(w, "TODO item not found", http.StatusNotFound)
 		return
 	}
@@ -109,7 +107,7 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 	// Implement logic to create a new TODO item in the database
 	// Placeholder logic
 	if err := db.Session.Query(`
-		INSERT INTO todos (id, user_id, title, description, status, created, updated)
+		INSERT INTO todos_new1 (id, user_id, title, description, status, created, updated)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`, &todo.ID, &todo.User_ID, &todo.Title, &todo.Description, &todo.Status, &todo.Created, &todo.Updated).Exec(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -126,8 +124,9 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["user_id"]
 
-	var todo models.Todo
 	// Parse request body
+	var todo models.Todo
+
 	err := json.NewDecoder(r.Body).Decode(&todo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -135,14 +134,12 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update the TODO item
-	// Placeholder logic
 	todo.User_ID = userID
 	todo.Updated = time.Now()
 
-	// Implement logic to update a TODO item in the database by ID
-	// Placeholder logic
+	// Implement logic to update a TODO item in the database by User Id
 	if err := db.Session.Query(`
-		UPDATE todos
+		UPDATE todos_new1
 		SET title = ?, description = ?, status = ?, updated = ?
 		WHERE user_id = ?
 	`, &todo.Title, &todo.Description, &todo.Status, &todo.Updated, &todo.User_ID).Exec(); err != nil {
@@ -161,8 +158,8 @@ func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 
 	// Delete TODO item from the database
 	if err := db.Session.Query(`
-		DELETE FROM todos
-		WHERE user_id = ?
+		DELETE FROM todos_new1
+		WHERE user_id = ? ALLOW FILTERING
 	`, userID).Exec(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -20,8 +20,8 @@ func RegisterRoutes(router *mux.Router) {
 		"status", "{status:[a-zA-Z0-9]+}").Methods("GET")
 	router.HandleFunc("/todos/{user_id}", controllers.GetTodo).Methods("GET")
 	router.HandleFunc("/todos", controllers.CreateTodo).Methods("POST")
-	router.HandleFunc("/todos/{id}", controllers.UpdateTodo).Methods("PUT")
-	router.HandleFunc("/todos/{id}", controllers.DeleteTodo).Methods("DELETE")
+	router.HandleFunc("/todos/{user_id}", controllers.UpdateTodo).Methods("PUT")
+	router.HandleFunc("/todos/{user_id}", controllers.DeleteTodo).Methods("DELETE")
 
 
 }
